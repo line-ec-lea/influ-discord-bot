@@ -9,6 +9,11 @@
     "test": "vitest",
     "cf-typegen": "wrangler types"
   },
+  "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "hono": "^4.6.13",
+    "valibot": "1.0.0-beta.11"
+  },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@cloudflare/vitest-pool-workers": "^0.5.34",
@@ -18,8 +23,5 @@
     "typescript": "^5.7.2",
     "vitest": "2.0.5",
     "wrangler": "^3.93.0"
-  },
-  "dependencies": {
-    "hono": "^4.6.13"
   }
 }

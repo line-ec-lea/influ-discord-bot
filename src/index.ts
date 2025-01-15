@@ -5,6 +5,9 @@ import type {
 } from "@notionhq/client/build/src/api-endpoints";
 import type { RESTPostAPIChannelMessageJSONBody } from "discord-api-types/v10";
 import { Hono } from "hono";
+import { Client as NotionClient } from "@notionhq/client";
+import * as v from "valibot";
+import * as notion from "./notion";
 
 type RemoveId<T> = T extends unknown ? Omit<T, "id"> : never;
 type Property = PageObjectResponse["properties"][number];
@@ -13,9 +16,11 @@ interface NotionWebhookBody {
 	data: PageObjectResponse;
 }
 
-interface Env {
-	DISCORD_BOT_TOKEN: string;
-}
+const EnvSchema = v.object({
+	DISCORD_BOT_TOKEN: v.string(),
+	NOTION_API_KEY: v.string(),
+	NOTION_MEMBER_DATABASE_ID: v.string(),
+});
 
 interface DiscordErrorResponse {
 	code: number;
@@ -51,16 +56,26 @@ async function sendDiscordMessage(
 	return response;
 }
 
-function formatPerson(
+async function formatPerson(
+	getDiscordUserIdByNotionUserId: notion.GetDiscordUserIdByNotionUserId,
 	person: PartialUserObjectResponse | UserObjectResponse,
-): string {
-	if ("type" in person) {
+): Promise<string> {
+	if (!("type" in person)) {
+		return person.id;
+	}
+
+	const discordUserId = await getDiscordUserIdByNotionUserId(person.id);
+	if (!discordUserId) {
 		return person.name ?? person.id;
 	}
-	return person.id;
+
+	return `<@${discordUserId}>`;
 }
 
-function formatProperty(property: RemoveId<Property>): string {
+async function formatProperty(
+	getDiscordUserIdByNotionUserId: notion.GetDiscordUserIdByNotionUserId,
+	property: RemoveId<Property>,
+): Promise<string> {
 	switch (property.type) {
 		case "title":
 			return (
@@ -101,9 +116,15 @@ function formatProperty(property: RemoveId<Property>): string {
 		case "last_edited_time":
 			return property.last_edited_time ?? "[No Time]";
 		case "created_by":
-			return formatPerson(property.created_by);
+			return await formatPerson(
+				getDiscordUserIdByNotionUserId,
+				property.created_by,
+			);
 		case "last_edited_by":
-			return formatPerson(property.last_edited_by);
+			return await formatPerson(
+				getDiscordUserIdByNotionUserId,
+				property.last_edited_by,
+			);
 		case "unique_id":
 			return property.unique_id.number === null
 				? "[No ID]"
@@ -116,7 +137,15 @@ function formatProperty(property: RemoveId<Property>): string {
 				"[No Relations]"
 			);
 		case "people":
-			return property.people.map(formatPerson).join(", ") || "[No People]";
+			return (
+				(
+					await Promise.all(
+						property.people.map((person) =>
+							formatPerson(getDiscordUserIdByNotionUserId, person),
+						),
+					)
+				).join(", ") || "[No People]"
+			);
 		case "rollup":
 			switch (property.rollup.type) {
 				case "number":
@@ -127,8 +156,13 @@ function formatProperty(property: RemoveId<Property>): string {
 						: (property.rollup.date?.start ?? "[Invalid Date]");
 				case "array":
 					return (
-						property.rollup.array?.map(formatProperty).join(", ") ??
-						"[Empty Rollup Array]"
+						(
+							await Promise.all(
+								property.rollup.array?.map((value) =>
+									formatProperty(getDiscordUserIdByNotionUserId, value),
+								),
+							)
+						).join(", ") || "[Empty Rollup Array]"
 					);
 				default:
 					return "[Unsupported Rollup Type]";
@@ -145,19 +179,34 @@ app.get("/", (c) => {
 });
 
 app.post("/:discordChannelId", async (c) => {
-	if (!c.env.DISCORD_BOT_TOKEN) {
-		throw new Error("DISCORD_BOT_TOKEN is not set");
-	}
+	const env = v.parse(EnvSchema, c.env);
 
 	const title = c.req.query("title");
 	const discordChannelId = c.req.param("discordChannelId");
 	const body = await c.req.json<NotionWebhookBody>();
 
-	const formattedProperties = Object.entries(body.data.properties)
-		.map(([key, property]) => `${key}: ${formatProperty(property)}`)
-		.join("\n");
+	const getDiscordUserIdByNotionUserId = (notionUserId: string) => {
+		const notionClient = new NotionClient({
+			auth: env.NOTION_API_KEY,
+		});
 
-	await sendDiscordMessage(c.env.DISCORD_BOT_TOKEN, discordChannelId, {
+		return notion.getDiscordUserIdByNotionUserId(
+			notionClient,
+			env.NOTION_MEMBER_DATABASE_ID,
+			notionUserId,
+		);
+	};
+
+	const formattedProperties = (
+		await Promise.all(
+			Object.entries(body.data.properties).map(
+				async ([key, property]) =>
+					`${key}: ${await formatProperty(getDiscordUserIdByNotionUserId, property)}`,
+			),
+		)
+	).join("\n");
+
+	await sendDiscordMessage(env.DISCORD_BOT_TOKEN, discordChannelId, {
 		content: [
 			title,
 			formattedProperties || "[No properties to display]",
