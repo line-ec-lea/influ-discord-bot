@@ -5,10 +5,6 @@ import * as v from "valibot";
 // numberとして扱うと末尾の数桁が切り捨てられる
 // そのためstringとして扱う
 
-export type GetDiscordUserIdByNotionUserId = (
-	notionUserId: string,
-) => Promise<string | undefined>;
-
 const DiscordIdSchema = v.pipe(
 	v.string(),
 	v.minLength(17),
