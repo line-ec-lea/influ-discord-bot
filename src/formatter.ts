@@ -114,7 +114,7 @@ export async function formatProperty(
 							? "✅"
 							: "❌";
 				case "date":
-					return property.formula.date?.start
+					return property.formula.date?.end
 						? `${property.formula.date.start} - ${property.formula.date.end}`
 						: (property.formula.date?.start ?? "[Invalid Date]");
 				default:
@@ -140,7 +140,7 @@ export async function formatProperty(
 				case "number":
 					return property.rollup.number?.toString() ?? "[No Rollup Number]";
 				case "date":
-					return property.rollup.date?.start
+					return property.rollup.date?.end
 						? `${property.rollup.date.start} - ${property.rollup.date.end}`
 						: (property.rollup.date?.start ?? "[Invalid Date]");
 				case "array":
