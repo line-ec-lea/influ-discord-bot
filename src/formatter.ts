@@ -101,6 +101,40 @@ export async function formatProperty(
 					)
 				).join(", ") || "[No People]"
 			);
+		case "formula":
+			switch (property.formula.type) {
+				case "string":
+					return property.formula.string ?? "[No Formula String]";
+				case "number":
+					return property.formula.number?.toString() ?? "[No Formula Number]";
+				case "boolean":
+					return property.formula.boolean === null
+						? "[No Formula Boolean]"
+						: property.formula.boolean
+							? "✅"
+							: "❌";
+				case "date":
+					return property.formula.date?.start
+						? `${property.formula.date.start} - ${property.formula.date.end}`
+						: (property.formula.date?.start ?? "[Invalid Date]");
+				default:
+					return "[Unsupported Formula Type]";
+			}
+		case "files":
+			return (
+				property.files
+					.map((file) => {
+						switch (file.type) {
+							case "file":
+								return `[${file.name}](${file.file.url})`;
+							case "external":
+								return `[${file.name}](${file.external.url})`;
+							default:
+								return file.name;
+						}
+					})
+					.join(", ") || "[No Files]"
+			);
 		case "rollup":
 			switch (property.rollup.type) {
 				case "number":
