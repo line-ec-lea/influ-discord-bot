@@ -27,6 +27,18 @@ async function formatPerson(
 	return `<@${discordUserId}>`;
 }
 
+function formatDate(
+	date: { start: string; end: string | null } | null,
+): string {
+	if (!date) return "[No Date]";
+
+	if (date.end) {
+		return `${date.start} - ${date.end}`;
+	}
+
+	return date.start;
+}
+
 export async function formatProperty(
 	getDiscordUserIdByNotionUserId: GetDiscordUserIdByNotionUserId,
 	property: RemoveId<Property>,
@@ -52,10 +64,7 @@ export async function formatProperty(
 				"[No Selections]"
 			);
 		case "date":
-			if (!property.date) return "[No Date]";
-			return property.date.end
-				? `${property.date.start} - ${property.date.end}`
-				: (property.date.start ?? "[Invalid Date]");
+			return formatDate(property.date);
 		case "checkbox":
 			return property.checkbox ? "✅" : "❌";
 		case "email":
@@ -114,9 +123,7 @@ export async function formatProperty(
 							? "✅"
 							: "❌";
 				case "date":
-					return property.formula.date?.end
-						? `${property.formula.date.start} - ${property.formula.date.end}`
-						: (property.formula.date?.start ?? "[Invalid Date]");
+					return formatDate(property.formula.date);
 				default:
 					return "[Unsupported Formula Type]";
 			}
