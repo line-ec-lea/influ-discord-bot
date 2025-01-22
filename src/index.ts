@@ -66,12 +66,28 @@ app.post("/:discordChannelId", async (c) => {
 	const notionClient = new NotionClient({
 		auth: env.NOTION_API_KEY,
 	});
-	const getDiscordUserIdByNotionUserId = (notionUserId: string) => {
-		return repo.getDiscordUserIdByNotionUserId(
+
+	const getDiscordUserIdByNotionUserId = async (notionUserId: string) => {
+		const cached = await c.env.NOTION_MEMBERS.get(notionUserId);
+		if (cached) {
+			return cached;
+		}
+
+		const discordUserId = await repo.getDiscordUserIdByNotionUserId(
 			notionClient,
 			env.NOTION_MEMBER_DATABASE_ID,
 			notionUserId,
 		);
+
+		if (!discordUserId) {
+			return;
+		}
+
+		await c.env.NOTION_MEMBERS.put(notionUserId, discordUserId, {
+			expirationTtl: 60 * 60, // 1 hour
+		});
+
+		return discordUserId;
 	};
 
 	const formattedProperties = (
