@@ -8,7 +8,7 @@ import * as v from "valibot";
 const DiscordIdSchema = v.pipe(
 	v.string(),
 	v.minLength(17),
-	v.maxLength(18),
+	v.maxLength(19),
 	v.regex(/^\d+$/),
 );
 
