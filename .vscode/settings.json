@@ -1,5 +1,12 @@
 {
 	"editor.defaultFormatter": "biomejs.biome",
 	"editor.formatOnSave": true,
-	"cSpell.words": ["influ", "notionhq", "valibot"]
+	"editor.codeActionsOnSave": {
+		"quickfix.biome": "explicit",
+		"source.organizeImports.biome": "explicit"
+	},
+	"files.associations": {
+		".dev.vars": "dotenv"
+	},
+	"cSpell.words": ["hrmos", "influ", "notionhq", "valibot"]
 }

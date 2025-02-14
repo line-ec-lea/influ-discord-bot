@@ -4,7 +4,7 @@ import type { RESTPostAPIChannelMessageJSONBody } from "discord-api-types/v10";
 import { Hono } from "hono";
 import * as v from "valibot";
 import { formatProperty } from "./formatter";
-import * as repo from "./repo";
+import * as repo from "./notion";
 
 interface NotionWebhookBody {
 	data: PageObjectResponse;

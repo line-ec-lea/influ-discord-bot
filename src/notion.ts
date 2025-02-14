@@ -57,3 +57,41 @@ export async function getDiscordUserIdByNotionUserId(
 
 	return discordId;
 }
+
+export async function getHrmosUserIdByDiscordUserId(
+	notion: NotionClient,
+	memberDatabaseId: string,
+	discordUserId: string,
+): Promise<number | undefined> {
+	const users = await notion.databases.query({
+		database_id: memberDatabaseId,
+		page_size: 2,
+		// NOTE: プロパティ数が多い場合はプロパティのidを指定する
+		// filter_properties: ["%5D%3A%7Dl"],
+		filter: {
+			property: "Discord ID",
+			rich_text: {
+				contains: discordUserId,
+			},
+		},
+	});
+
+	if (users.results.length !== 1) {
+		console.warn(`Discord user ${discordUserId} expected 1 user, got 2`);
+	}
+
+	const result = users.results[0];
+	if (!result || result.object !== "page" || !("properties" in result)) return;
+
+	const hrmosIdProperty = result.properties["HRMOS ID"];
+	if (!hrmosIdProperty) return;
+	if (hrmosIdProperty.type !== "number") {
+		console.warn(`Notion Database Property "HRMOS ID" is not a number`);
+		return;
+	}
+
+	const hrmosId = hrmosIdProperty.number;
+	if (!hrmosId) return;
+
+	return hrmosId;
+}

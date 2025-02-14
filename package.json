@@ -1,27 +1,34 @@
 {
-  "name": "notion-to-discord-bot",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
-    "start": "wrangler dev",
-    "test": "vitest",
-    "cf-typegen": "wrangler types"
-  },
-  "dependencies": {
-    "@notionhq/client": "^2.2.15",
-    "hono": "^4.6.13",
-    "valibot": "1.0.0-beta.11"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@cloudflare/vitest-pool-workers": "^0.5.34",
-    "@cloudflare/workers-types": "^4.20241205.0",
-    "@notionhq/client": "^2.2.15",
-    "discord-api-types": "^0.37.110",
-    "typescript": "^5.7.2",
-    "vitest": "2.0.5",
-    "wrangler": "^3.103.2"
-  }
+	"name": "notion-to-discord-bot",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"test": "vitest",
+		"cf-typegen": "wrangler types",
+		"typegen": "openapi-typescript 'https://ieyasu.co/docs/openapi.json' -o src/lib/api/v1.d.ts"
+	},
+	"dependencies": {
+		"@date-fns/tz": "^1.2.0",
+		"@notionhq/client": "^2.2.15",
+		"date-fns": "^4.1.0",
+		"discord-hono": "^0.16.1",
+		"hono": "^4.7.1",
+		"openapi-fetch": "^0.13.4",
+		"valibot": "1.0.0-beta.11"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@cloudflare/vitest-pool-workers": "^0.5.41",
+		"@cloudflare/workers-types": "^4.20250204.0",
+		"@notionhq/client": "^2.2.15",
+		"discord-api-types": "^0.37.119",
+		"openapi-typescript": "^7.6.1",
+		"type-fest": "^4.34.1",
+		"typescript": "^5.7.3",
+		"vitest": "2.0.5",
+		"wrangler": "^3.109.0"
+	}
 }
