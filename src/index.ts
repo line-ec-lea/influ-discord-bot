@@ -1,6 +1,10 @@
 import { Client as NotionClient } from "@notionhq/client";
 import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
-import type { RESTPostAPIChannelMessageJSONBody } from "discord-api-types/v10";
+import {
+	ButtonStyle,
+	ComponentType,
+	type RESTPostAPIChannelMessageJSONBody,
+} from "discord-api-types/v10";
 import { Hono } from "hono";
 import * as v from "valibot";
 import { formatProperty } from "./formatter";
@@ -100,13 +104,22 @@ app.post("/:discordChannelId", async (c) => {
 	).join("\n");
 
 	await sendDiscordMessage(env.DISCORD_BOT_TOKEN, discordChannelId, {
-		content: [
-			title,
-			formattedProperties || "[No properties to display]",
-			body.data.url,
-		]
+		content: [title, formattedProperties || "[No properties to display]"]
 			.filter(Boolean)
 			.join("\n"),
+		components: [
+			{
+				type: ComponentType.ActionRow,
+				components: [
+					{
+						type: ComponentType.Button,
+						label: "Notionで開く",
+						style: ButtonStyle.Link,
+						url: body.data.url,
+					},
+				],
+			},
+		],
 	});
 
 	return c.body(null, 204);
