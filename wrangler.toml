@@ -76,7 +76,7 @@ NOTION_MEMBER_DATABASE_ID="b56d922f4a1c477394c574559c6194f7"
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#kv-namespaces
 [[kv_namespaces]]
 binding = "NOTION_MEMBERS"
-id = "4b2de711816046af81b0c8da8c5efbc7"
+id = "58f56ea8ad3f403cae00f7a1e21afd55"
 
 # Bind an mTLS certificate. Use to present a client certificate when communicating with another service.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#mtls-certificates
