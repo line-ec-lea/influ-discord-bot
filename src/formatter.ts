@@ -147,14 +147,12 @@ export async function formatProperty(
 				case "number":
 					return property.rollup.number?.toString() ?? "[No Rollup Number]";
 				case "date":
-					return property.rollup.date?.end
-						? `${property.rollup.date.start} - ${property.rollup.date.end}`
-						: (property.rollup.date?.start ?? "[Invalid Date]");
+					return formatDate(property.rollup.date);
 				case "array":
 					return (
 						(
 							await Promise.all(
-								property.rollup.array?.map((value) =>
+								property.rollup.array.map((value) =>
 									formatProperty(getDiscordUserIdByNotionUserId, value),
 								),
 							)

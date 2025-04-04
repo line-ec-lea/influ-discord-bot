@@ -1,9 +1,9 @@
 import { Client as NotionClient } from "@notionhq/client";
 import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
-import {
+import type {
 	ButtonStyle,
 	ComponentType,
-	type RESTPostAPIChannelMessageJSONBody,
+	RESTPostAPIChannelMessageJSONBody,
 } from "discord-api-types/v10";
 import { Hono } from "hono";
 import * as v from "valibot";
@@ -109,12 +109,12 @@ app.post("/:discordChannelId", async (c) => {
 			.join("\n"),
 		components: [
 			{
-				type: ComponentType.ActionRow,
+				type: 1 satisfies ComponentType.ActionRow,
 				components: [
 					{
-						type: ComponentType.Button,
+						type: 2 satisfies ComponentType.Button,
 						label: "Notionで開く",
-						style: ButtonStyle.Link,
+						style: 5 satisfies ButtonStyle.Link,
 						url: body.data.url,
 					},
 				],
