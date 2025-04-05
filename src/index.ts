@@ -94,19 +94,23 @@ app.post("/:discordChannelId", async (c) => {
 		return discordUserId;
 	};
 
-	const formattedProperties = (
-		await Promise.all(
-			Object.entries(body.data.properties).map(
-				async ([key, property]) =>
-					`${key}: ${await formatProperty(getDiscordUserIdByNotionUserId, property)}`,
-			),
-		)
-	).join("\n");
+	const fields = await Promise.all(
+		Object.entries(body.data.properties).map(async ([key, property]) => ({
+			name: key,
+			value: await formatProperty(getDiscordUserIdByNotionUserId, property),
+			inline: true,
+		})),
+	);
 
 	await sendDiscordMessage(env.DISCORD_BOT_TOKEN, discordChannelId, {
-		content: [title, formattedProperties || "[No properties to display]"]
-			.filter(Boolean)
-			.join("\n"),
+		embeds: [
+			{
+				title,
+				color: 0xad7f4b,
+				url: body.data.url,
+				fields,
+			},
+		],
 		components: [
 			{
 				type: 1 satisfies ComponentType.ActionRow,
