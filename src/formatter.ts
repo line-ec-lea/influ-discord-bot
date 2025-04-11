@@ -15,13 +15,12 @@ async function formatPerson(
 	getDiscordUserIdByNotionUserId: GetDiscordUserIdByNotionUserId,
 	person: PartialUserObjectResponse | UserObjectResponse,
 ): Promise<string> {
-	if (!("type" in person)) {
-		return person.id;
-	}
-
 	const discordUserId = await getDiscordUserIdByNotionUserId(person.id);
 	if (!discordUserId) {
-		return person.name ?? person.id;
+		if ("name" in person) {
+			return person.name ?? person.id;
+		}
+		return person.id;
 	}
 
 	return `<@${discordUserId}>`;
