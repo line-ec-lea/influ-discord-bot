@@ -5,7 +5,7 @@ import type {
 } from "@notionhq/client/build/src/api-endpoints";
 
 type RemoveId<T> = T extends unknown ? Omit<T, "id"> : never;
-type Property = PageObjectResponse["properties"][number];
+type Property = RemoveId<PageObjectResponse["properties"][number]>;
 
 export type GetDiscordUserIdByNotionUserId = (
 	notionUserId: string,
@@ -40,7 +40,7 @@ function formatDate(
 
 export async function formatProperty(
 	getDiscordUserIdByNotionUserId: GetDiscordUserIdByNotionUserId,
-	property: RemoveId<Property>,
+	property: Property,
 ): Promise<string> {
 	switch (property.type) {
 		case "title":
