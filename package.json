@@ -1,27 +1,27 @@
 {
-  "name": "notion-to-discord-bot",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
-    "start": "wrangler dev",
-    "test": "vitest",
-    "cf-typegen": "wrangler types"
-  },
-  "dependencies": {
-    "@notionhq/client": "^2.2.15",
-    "hono": "^4.6.13",
-    "valibot": "1.0.0"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@cloudflare/vitest-pool-workers": "^0.5.34",
-    "@cloudflare/workers-types": "^4.20250404.0",
-    "@notionhq/client": "^2.2.15",
-    "discord-api-types": "^0.37.110",
-    "typescript": "^5.7.2",
-    "vitest": "2.0.5",
-    "wrangler": "^4.7.1"
-  }
+	"name": "notion-to-discord-bot",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"test": "vitest",
+		"cf-typegen": "wrangler types"
+	},
+	"dependencies": {
+		"@notionhq/client": "^2.2.15",
+		"hono": "^4.6.13",
+		"valibot": "1.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.0.4",
+		"@cloudflare/vitest-pool-workers": "^0.5.34",
+		"@cloudflare/workers-types": "^4.20250404.0",
+		"@notionhq/client": "^2.2.15",
+		"discord-api-types": "^0.37.110",
+		"typescript": "^5.7.2",
+		"vitest": "2.0.5",
+		"wrangler": "^4.7.1"
+	}
 }
