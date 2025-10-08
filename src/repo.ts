@@ -58,3 +58,32 @@ export async function getDiscordUserIdByNotionUserId(
 
 	return discordId;
 }
+
+export const constructGetCachedDiscordUserIdByNotionUserId =
+	(
+		notionMembersKv: KVNamespace,
+		notionClient: NotionClient,
+		memberDatabaseId: string,
+	) =>
+	async (notionUserId: string) => {
+		const cached = await notionMembersKv.get(notionUserId);
+		if (cached) {
+			return cached;
+		}
+
+		const discordUserId = await getDiscordUserIdByNotionUserId(
+			notionClient,
+			memberDatabaseId,
+			notionUserId,
+		);
+
+		if (!discordUserId) {
+			return;
+		}
+
+		void notionMembersKv.put(notionUserId, discordUserId, {
+			expirationTtl: 60 * 60, // 1 hour
+		});
+
+		return discordUserId;
+	};

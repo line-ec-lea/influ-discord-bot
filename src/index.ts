@@ -8,7 +8,7 @@ import type {
 import { Hono } from "hono";
 import * as v from "valibot";
 import { formatProperty } from "./formatter";
-import * as repo from "./repo";
+import { constructGetCachedDiscordUserIdByNotionUserId } from "./repo";
 
 interface NotionWebhookBody {
 	data: PageObjectResponse;
@@ -66,28 +66,12 @@ app.post("/:discordChannelId", async (c) => {
 		auth: env.NOTION_API_KEY,
 	});
 
-	const getDiscordUserIdByNotionUserId = async (notionUserId: string) => {
-		const cached = await c.env.NOTION_MEMBERS.get(notionUserId);
-		if (cached) {
-			return cached;
-		}
-
-		const discordUserId = await repo.getDiscordUserIdByNotionUserId(
+	const getDiscordUserIdByNotionUserId =
+		constructGetCachedDiscordUserIdByNotionUserId(
+			c.env.NOTION_MEMBERS,
 			notionClient,
 			env.NOTION_MEMBER_DATABASE_ID,
-			notionUserId,
 		);
-
-		if (!discordUserId) {
-			return;
-		}
-
-		await c.env.NOTION_MEMBERS.put(notionUserId, discordUserId, {
-			expirationTtl: 60 * 60, // 1 hour
-		});
-
-		return discordUserId;
-	};
 
 	const fields = await Promise.all(
 		Object.entries(body.data.properties).map(async ([key, property]) => ({
