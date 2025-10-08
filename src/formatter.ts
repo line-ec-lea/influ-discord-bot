@@ -70,7 +70,7 @@ const constructFormatRichText =
 					case "custom_emoji":
 						return `[${richText.mention.custom_emoji.name}](${richText.mention.custom_emoji.url})`;
 					default:
-						return "[Unsupported Mention Type]";
+						return `[Unsupported Mention Type: ${JSON.stringify(richText.mention, null, 2)}]`;
 				}
 			case "equation":
 				return richText.plain_text;
@@ -157,7 +157,7 @@ export async function formatProperty(
 				case "date":
 					return formatDate(property.formula.date);
 				default:
-					return "[Unsupported Formula Type]";
+					return `[Unsupported Formula Type: ${JSON.stringify(property.formula, null, 2)}]`;
 			}
 		case "files":
 			return (
@@ -191,7 +191,7 @@ export async function formatProperty(
 						).join(", ") || "[Empty Rollup Array]"
 					);
 				default:
-					return "[Unsupported Rollup Type]";
+					return `[Unsupported Rollup Type: ${JSON.stringify(property.rollup, null, 2)}]`;
 			}
 		case "verification":
 			return property.verification
