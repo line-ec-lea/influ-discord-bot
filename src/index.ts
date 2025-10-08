@@ -20,11 +20,6 @@ const EnvSchema = v.object({
 	NOTION_MEMBER_DATABASE_ID: v.string(),
 });
 
-interface DiscordErrorResponse {
-	code: number;
-	message: string;
-}
-
 async function sendDiscordMessage(
 	token: string,
 	channelId: string,
@@ -43,12 +38,12 @@ async function sendDiscordMessage(
 	);
 
 	if (!response.ok) {
-		const errorBody = (await response.json()) as DiscordErrorResponse;
+		const errorBody = await response.text();
 		console.error(errorBody);
 
-		throw new Error(
-			`Discord API error: ${response.status} - ${errorBody.message}`,
-		);
+		throw new Error(`Discord API error: ${response.status}`, {
+			cause: errorBody,
+		});
 	}
 
 	return response;
