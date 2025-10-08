@@ -1,10 +1,11 @@
 import type { Client as NotionClient } from "@notionhq/client";
 import * as v from "valibot";
 
-// NOTE: DiscordのIDは数値ではあるが18桁もあるため
-// numberとして扱うと末尾の数桁が切り捨てられる
-// そのためstringとして扱う
-
+/**
+ * NOTE: DiscordのIDは数値ではあるが19桁もあるため
+ * numberとして扱うと末尾の数桁が切り捨てられる
+ * そのためstringとして扱う
+ */
 const DiscordIdSchema = v.pipe(
 	v.string(),
 	v.minLength(17),
@@ -50,7 +51,7 @@ export async function getDiscordUserIdByNotionUserId(
 	const discordIdResult = v.safeParse(DiscordIdSchema, discordId);
 	if (!discordIdResult.success) {
 		console.warn(
-			`Notion user ${notionUserId} Discord ID is not a number. reason: ${discordIdResult.issues.map((i) => i.message).join(", ")}`,
+			`Notion user ${notionUserId} Discord ID is invalid. reason: ${v.summarize(discordIdResult.issues)}`,
 		);
 		return;
 	}

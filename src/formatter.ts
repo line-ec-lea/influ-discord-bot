@@ -1,56 +1,100 @@
 import type {
 	PageObjectResponse,
 	PartialUserObjectResponse,
+	RichTextItemResponse,
 	UserObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 
 type RemoveId<T> = T extends unknown ? Omit<T, "id"> : never;
 type Property = RemoveId<PageObjectResponse["properties"][number]>;
 
+type DateResponse = Extract<Property, { type: "date" }>["date"];
+
 export type GetDiscordUserIdByNotionUserId = (
 	notionUserId: string,
 ) => Promise<string | undefined>;
 
-async function formatPerson(
-	getDiscordUserIdByNotionUserId: GetDiscordUserIdByNotionUserId,
-	person: PartialUserObjectResponse | UserObjectResponse,
-): Promise<string> {
-	const discordUserId = await getDiscordUserIdByNotionUserId(person.id);
-	if (!discordUserId) {
-		if ("name" in person) {
-			return person.name ?? person.id;
+const constructFormatPerson =
+	(getDiscordUserIdByNotionUserId: GetDiscordUserIdByNotionUserId) =>
+	async (
+		person: PartialUserObjectResponse | UserObjectResponse,
+	): Promise<string> => {
+		const discordUserId = await getDiscordUserIdByNotionUserId(person.id);
+		if (!discordUserId) {
+			if ("name" in person) {
+				return person.name ?? person.id;
+			}
+			return person.id;
 		}
-		return person.id;
-	}
 
-	return `<@${discordUserId}>`;
-}
+		return `<@${discordUserId}>`;
+	};
 
-function formatDate(
-	date: { start: string; end: string | null } | null,
-): string {
+function formatDate(date: DateResponse): string {
 	if (!date) return "[No Date]";
 
-	if (date.end) {
-		return `${date.start} - ${date.end}`;
+	const dateStr = date.end ? `${date.start} - ${date.end}` : date.start;
+
+	if (date.time_zone) {
+		return `${dateStr} (${date.time_zone})`;
 	}
 
-	return date.start;
+	return dateStr;
 }
+
+const constructFormatRichText =
+	(formatPerson: ReturnType<typeof constructFormatPerson>) =>
+	async (richText: RichTextItemResponse): Promise<string> => {
+		switch (richText.type) {
+			case "text":
+				if (richText.text.link) {
+					return `[${richText.text.content}](${richText.text.link.url})`;
+				}
+				return richText.text.content;
+			case "mention":
+				switch (richText.mention.type) {
+					case "user":
+						return await formatPerson(richText.mention.user);
+					case "date":
+						return formatDate(richText.mention.date);
+					case "link_preview":
+						return `[${richText.plain_text}](${richText.mention.link_preview.url})`;
+					case "template_mention":
+						return richText.plain_text;
+					case "page":
+						return `[${richText.plain_text}](https://www.notion.so/${richText.mention.page.id.replaceAll("-", "")})`;
+					case "database":
+						return `[${richText.plain_text}](https://www.notion.so/${richText.mention.database.id.replaceAll("-", "")})`;
+					case "link_mention":
+						return `[${richText.mention.link_mention.title ?? richText.plain_text}](${richText.mention.link_mention.href})`;
+					case "custom_emoji":
+						return `[${richText.mention.custom_emoji.name}](${richText.mention.custom_emoji.url})`;
+					default:
+						return "[Unsupported Mention Type]";
+				}
+			case "equation":
+				return richText.plain_text;
+			default:
+				return `[Unsupported Rich Text Type: ${JSON.stringify(richText, null, 2)}]`;
+		}
+	};
 
 export async function formatProperty(
 	getDiscordUserIdByNotionUserId: GetDiscordUserIdByNotionUserId,
 	property: Property,
 ): Promise<string> {
+	const formatPerson = constructFormatPerson(getDiscordUserIdByNotionUserId);
+	const formatRichText = constructFormatRichText(formatPerson);
+
 	switch (property.type) {
 		case "title":
 			return (
-				property.title.map((title) => title.plain_text).join("") ||
+				(await Promise.all(property.title.map(formatRichText))).join("") ||
 				"[Empty Title]"
 			);
 		case "rich_text":
 			return (
-				property.rich_text.map((text) => text.plain_text).join("") ||
+				(await Promise.all(property.rich_text.map(formatRichText))).join("") ||
 				"[Empty Text]"
 			);
 		case "url":
@@ -79,15 +123,9 @@ export async function formatProperty(
 		case "last_edited_time":
 			return property.last_edited_time ?? "[No Time]";
 		case "created_by":
-			return await formatPerson(
-				getDiscordUserIdByNotionUserId,
-				property.created_by,
-			);
+			return await formatPerson(property.created_by);
 		case "last_edited_by":
-			return await formatPerson(
-				getDiscordUserIdByNotionUserId,
-				property.last_edited_by,
-			);
+			return await formatPerson(property.last_edited_by);
 		case "unique_id":
 			return property.unique_id.number === null
 				? "[No ID]"
@@ -101,13 +139,8 @@ export async function formatProperty(
 			);
 		case "people":
 			return (
-				(
-					await Promise.all(
-						property.people.map((person) =>
-							formatPerson(getDiscordUserIdByNotionUserId, person),
-						),
-					)
-				).join(", ") || "[No People]"
+				(await Promise.all(property.people.map(formatPerson))).join(", ") ||
+				"[No People]"
 			);
 		case "formula":
 			switch (property.formula.type) {
@@ -160,6 +193,16 @@ export async function formatProperty(
 				default:
 					return "[Unsupported Rollup Type]";
 			}
+		case "verification":
+			return property.verification
+				? property.verification.state === "unverified"
+					? "🔴 未認証"
+					: property.verification.state === "expired"
+						? "🟡 有効期限切れ"
+						: "🟢 認証済み"
+				: "[No Verification]";
+		case "button":
+			return "[Button]";
 		default:
 			return `[Unsupported Type: ${JSON.stringify(property, null, 2)}]`;
 	}

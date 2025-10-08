@@ -1,4 +1,5 @@
 {
+	"biome.enabled": true,
 	"editor.defaultFormatter": "biomejs.biome",
 	"editor.formatOnSave": true,
 	"editor.codeActionsOnSave": {
@@ -6,5 +7,9 @@
 		"source.organizeImports.biome": "explicit"
 	},
 	"extensions.ignoreRecommendations": false,
+	"files.associations": {
+		".dev.vars": "dotenv",
+		".dev.vars.example": "dotenv"
+	},
 	"cSpell.words": ["influ", "notionhq", "valibot"]
 }
