@@ -1,4 +1,5 @@
 import type {
+	GroupObjectResponse,
 	PageObjectResponse,
 	PartialUserObjectResponse,
 	RichTextItemResponse,
@@ -17,7 +18,10 @@ export type GetDiscordUserIdByNotionUserId = (
 const constructFormatPerson =
 	(getDiscordUserIdByNotionUserId: GetDiscordUserIdByNotionUserId) =>
 	async (
-		person: PartialUserObjectResponse | UserObjectResponse,
+		person:
+			| PartialUserObjectResponse
+			| UserObjectResponse
+			| GroupObjectResponse,
 	): Promise<string> => {
 		const discordUserId = await getDiscordUserIdByNotionUserId(person.id);
 		if (!discordUserId) {
@@ -169,7 +173,10 @@ export async function formatProperty(
 							case "external":
 								return `[${file.name}](${file.external.url})`;
 							default:
-								return file.name;
+								if ("name" in file) {
+									return (file as { name: string }).name;
+								}
+								return "[Unsupported File Type]";
 						}
 					})
 					.join(", ") || "[No Files]"

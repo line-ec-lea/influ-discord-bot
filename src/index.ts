@@ -17,7 +17,7 @@ interface NotionWebhookBody {
 const EnvSchema = v.object({
 	DISCORD_BOT_TOKEN: v.string(),
 	NOTION_API_KEY: v.string(),
-	NOTION_MEMBER_DATABASE_ID: v.string(),
+	NOTION_MEMBER_DATA_SOURCE_ID: v.string(),
 });
 
 async function sendDiscordMessage(
@@ -70,7 +70,7 @@ app.post("/:discordChannelId", async (c) => {
 		constructGetCachedDiscordUserIdByNotionUserId(
 			c.env.NOTION_MEMBERS,
 			notionClient,
-			env.NOTION_MEMBER_DATABASE_ID,
+			env.NOTION_MEMBER_DATA_SOURCE_ID,
 		);
 
 	const fields = await Promise.all(

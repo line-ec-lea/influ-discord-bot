@@ -15,11 +15,11 @@ const DiscordIdSchema = v.pipe(
 
 export async function getDiscordUserIdByNotionUserId(
 	notion: NotionClient,
-	memberDatabaseId: string,
+	memberDateSourceId: string,
 	notionUserId: string,
 ): Promise<string | undefined> {
-	const users = await notion.databases.query({
-		database_id: memberDatabaseId,
+	const users = await notion.dataSources.query({
+		data_source_id: memberDateSourceId,
 		page_size: 2,
 		// NOTE: プロパティ数が多い場合はプロパティのidを指定する
 		// filter_properties: ["%5D%3A%7Dl"],
@@ -63,7 +63,7 @@ export const constructGetCachedDiscordUserIdByNotionUserId =
 	(
 		notionMembersKv: KVNamespace,
 		notionClient: NotionClient,
-		memberDatabaseId: string,
+		memberDateSourceId: string,
 	) =>
 	async (notionUserId: string) => {
 		const cached = await notionMembersKv.get(notionUserId);
@@ -73,7 +73,7 @@ export const constructGetCachedDiscordUserIdByNotionUserId =
 
 		const discordUserId = await getDiscordUserIdByNotionUserId(
 			notionClient,
-			memberDatabaseId,
+			memberDateSourceId,
 			notionUserId,
 		);
 

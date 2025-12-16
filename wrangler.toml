@@ -23,7 +23,7 @@ mode = "smart"
 # Note: Use secrets to store sensitive data.
 # - https://developers.cloudflare.com/workers/configuration/secrets/
 [vars]
-NOTION_MEMBER_DATABASE_ID="b56d922f4a1c477394c574559c6194f7"
+NOTION_MEMBER_DATA_SOURCE_ID="2544b3f7-3903-4d10-bd57-af680bf50810"
 
 # Bind the Workers AI model catalog. Run machine learning models, powered by serverless GPUs, on Cloudflare’s global network
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#workers-ai
