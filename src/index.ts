@@ -51,10 +51,6 @@ async function sendDiscordMessage(
 
 const app = new Hono<{ Bindings: Env }>();
 
-app.get("/", (c) => {
-	return c.json({ message: "ok" }, 200);
-});
-
 app.post("/:discordChannelId", async (c) => {
 	const env = v.parse(EnvSchema, c.env);
 
