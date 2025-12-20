@@ -3,11 +3,4 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
 	plugins: [cloudflare()],
-	// build: {
-	// 	outDir: "dist/client",
-	// 	emptyOutDir: true,
-	// 	rollupOptions: {
-	// 		input: "./index.html",
-	// 	},
-	// },
 });
