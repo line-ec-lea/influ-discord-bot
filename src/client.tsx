@@ -68,6 +68,12 @@ export default function App() {
 		>
 			<style>
 				{`
+* {
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
 .app{
   --page-padding: 2rem;
   --h1-size: 2rem;
@@ -97,6 +103,15 @@ export default function App() {
     --url-min-width: 0px;
     --copy-min-width: 0px;
   }
+}
+/* 数値入力のスピナーを非表示 */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
 }
 `}
 			</style>
@@ -168,8 +183,8 @@ export default function App() {
 							</label>
 							<input
 								id="discord-channel-id"
-								type="text"
-								inputMode="numeric"
+								type="number"
+								inputmode="numeric"
 								autoComplete="off"
 								spellCheck={false}
 								value={discordChannelId}
