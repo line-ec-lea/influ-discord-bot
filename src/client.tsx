@@ -1,5 +1,11 @@
-import { useState } from "hono/jsx";
+import { useCallback, useEffect, useMemo, useState } from "hono/jsx";
 import { render } from "hono/jsx/dom";
+
+const validateChannelId = (id: string): boolean => {
+	if (!id.trim()) return false;
+	// DiscordのチャンネルIDは数字のみで、通常17-19桁
+	return /^\d{17,19}$/.test(id.trim());
+};
 
 export default function App() {
 	const [discordChannelId, setDiscordChannelId] = useState("");
@@ -9,17 +15,15 @@ export default function App() {
 		"idle",
 	);
 
-	const validateChannelId = (id: string): boolean => {
-		if (!id.trim()) return false;
-		// DiscordのチャンネルIDは数字のみで、通常17-19桁
-		return /^\d{17,19}$/.test(id.trim());
-	};
-
 	const normalizedChannelId = discordChannelId.trim();
 	const normalizedTitle = title.trim();
-	const isValidChannelId = validateChannelId(normalizedChannelId);
 
-	const url = (() => {
+	const isValidChannelId = useMemo(
+		() => validateChannelId(normalizedChannelId),
+		[normalizedChannelId],
+	);
+
+	const url = useMemo(() => {
 		if (!isValidChannelId) return "";
 		const baseUrl = window.location.origin;
 		const generated = new URL(`/${normalizedChannelId}`, baseUrl);
@@ -27,20 +31,30 @@ export default function App() {
 			generated.searchParams.set("title", normalizedTitle);
 		}
 		return generated.toString();
-	})();
+	}, [isValidChannelId, normalizedChannelId, normalizedTitle]);
 
-	const copyToClipboard = async () => {
+	const copyToClipboard = useCallback(async () => {
 		if (!url) return;
 		try {
 			await navigator.clipboard.writeText(url);
 			setCopyState("copied");
-			window.setTimeout(() => setCopyState("idle"), 1500);
 		} catch (err) {
 			console.error("コピーに失敗しました:", err);
 			setCopyState("failed");
-			window.setTimeout(() => setCopyState("idle"), 2000);
 		}
-	};
+	}, [url]);
+
+	// Reset copy state after delay
+	useEffect(() => {
+		if (copyState === "idle") return;
+
+		const timeoutId = window.setTimeout(
+			() => setCopyState("idle"),
+			copyState === "copied" ? 1500 : 2000,
+		);
+
+		return () => window.clearTimeout(timeoutId);
+	}, [copyState]);
 
 	return (
 		<div
@@ -212,13 +226,20 @@ export default function App() {
 								id="title"
 								rows={1}
 								value={title}
+								onKeyDown={(e) => {
+									if (e.key === "Enter") {
+										e.preventDefault();
+									}
+								}}
 								onInput={(e) => {
 									const target = e.currentTarget as HTMLTextAreaElement;
 									if (target) {
-										setTitle(target.value);
-										// 自動リサイズ（内容に合わせて高さを伸ばす）
-										target.style.height = "0px";
-										target.style.height = `${target.scrollHeight}px`;
+										// 改行文字を削除
+										const valueWithoutNewlines = target.value.replace(
+											/\n/g,
+											"",
+										);
+										setTitle(valueWithoutNewlines);
 									}
 								}}
 								placeholder="例: おすすめの本が追加されました"
@@ -230,8 +251,12 @@ export default function App() {
 									fontSize: "1rem",
 									boxSizing: "border-box",
 									resize: "none",
-									overflow: "hidden",
+									overflowWrap: "break-word",
+									wordBreak: "break-word",
+									whiteSpace: "pre-wrap",
 									lineHeight: "1.4",
+									fieldSizing: "content",
+									minHeight: "calc(1rem + 1.5rem)",
 								}}
 							/>
 							<p
