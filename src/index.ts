@@ -60,6 +60,7 @@ app.post("/:discordChannelId", async (c) => {
 
 	const notionClient = new NotionClient({
 		auth: env.NOTION_API_KEY,
+		fetch: fetch.bind(globalThis),
 	});
 
 	const getDiscordUserIdByNotionUserId =
