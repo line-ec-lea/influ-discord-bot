@@ -7,9 +7,43 @@ const validateChannelId = (id: string): boolean => {
 	return /^\d{17,19}$/.test(id.trim());
 };
 
+function getTitleFromUrl(): string {
+	const searchParams = new URLSearchParams(window.location.search);
+	return searchParams.get("title") || "";
+}
+
+function getChannelIdFromUrl(): string {
+	const pathname = window.location.pathname;
+	return pathname.slice(1).trim();
+}
+
+// URLを更新する関数
+const updateUrl = (channelId: string, title: string): void => {
+	const normalizedChannelId = channelId.trim();
+	const normalizedTitle = title.trim();
+
+	let newPath = "/";
+	if (normalizedChannelId && validateChannelId(normalizedChannelId)) {
+		newPath = `/${normalizedChannelId}`;
+	}
+
+	const newUrl = new URL(newPath, window.location.origin);
+	if (normalizedTitle) {
+		newUrl.searchParams.set("title", normalizedTitle);
+	}
+
+	// 履歴を更新（ページリロードなし）
+	window.history.replaceState(null, "", newUrl.toString());
+};
+
 export default function App() {
-	const [discordChannelId, setDiscordChannelId] = useState("");
-	const [title, setTitle] = useState("");
+	// URLから初期値を読み込む
+	const [discordChannelId, setDiscordChannelId] = useState(() => {
+		return getChannelIdFromUrl();
+	});
+	const [title, setTitle] = useState(() => {
+		return getTitleFromUrl();
+	});
 	const [isGuideExpanded, setIsGuideExpanded] = useState(false);
 	const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
 		"idle",
@@ -55,6 +89,22 @@ export default function App() {
 
 		return () => window.clearTimeout(timeoutId);
 	}, [copyState]);
+
+	// フォームの値が変更されたときにURLを更新
+	useEffect(() => {
+		updateUrl(discordChannelId, title);
+	}, [discordChannelId, title]);
+
+	// ブラウザの戻る/進むボタンに対応
+	useEffect(() => {
+		const handlePopState = () => {
+			setDiscordChannelId(getChannelIdFromUrl());
+			setTitle(getTitleFromUrl());
+		};
+
+		window.addEventListener("popstate", handlePopState);
+		return () => window.removeEventListener("popstate", handlePopState);
+	}, []);
 
 	return (
 		<div
